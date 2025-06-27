@@ -5,6 +5,11 @@ import AdminSidebar from '@/components/AdminSidebar';
 import AdminDashboard from './admin/AdminDashboard';
 import AdminNotifications from './admin/AdminNotifications';
 import AdminJobs from './admin/AdminJobs';
+import AdminProducts from './admin/AdminProducts';
+import AdminUsers from './admin/AdminUsers';
+import AdminReports from './admin/AdminReports';
+import AdminContent from './admin/AdminContent';
+import AdminSettings from './admin/AdminSettings';
 
 const Admin = () => {
   return (
@@ -15,11 +20,11 @@ const Admin = () => {
           <Route index element={<AdminDashboard />} />
           <Route path="notifications" element={<AdminNotifications />} />
           <Route path="jobs" element={<AdminJobs />} />
-          <Route path="products" element={<div className="p-6"><h1 className="text-2xl font-bold">Products Management</h1><p className="text-gray-600">Product management features coming soon...</p></div>} />
-          <Route path="users" element={<div className="p-6"><h1 className="text-2xl font-bold">User Management</h1><p className="text-gray-600">User management features coming soon...</p></div>} />
-          <Route path="reports" element={<div className="p-6"><h1 className="text-2xl font-bold">Reports</h1><p className="text-gray-600">Analytics and reporting features coming soon...</p></div>} />
-          <Route path="content" element={<div className="p-6"><h1 className="text-2xl font-bold">Content Management</h1><p className="text-gray-600">Content management features coming soon...</p></div>} />
-          <Route path="settings" element={<div className="p-6"><h1 className="text-2xl font-bold">Settings</h1><p className="text-gray-600">Settings panel coming soon...</p></div>} />
+          <Route path="products" element={<AdminProducts />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="reports" element={<AdminReports />} />
+          <Route path="content" element={<AdminContent />} />
+          <Route path="settings" element={<AdminSettings />} />
         </Routes>
       </div>
     </div>
