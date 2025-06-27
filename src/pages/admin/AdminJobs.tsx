@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const AdminJobs = () => {
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     title: '',
     company: '',
@@ -19,9 +21,7 @@ const AdminJobs = () => {
     description: '',
     requirements: ''
   });
-  const { toast } = useToast();
-
-  const jobs = [
+  const [jobs, setJobs] = useState([
     {
       id: 1,
       title: "Mathematics Teacher",
@@ -29,6 +29,8 @@ const AdminJobs = () => {
       location: "New York, NY",
       salary: "$45,000 - $60,000",
       type: "Full-time",
+      description: "Teaching advanced mathematics to high school students",
+      requirements: "Bachelor's degree in Mathematics, Teaching certification",
       posted: "2 days ago",
       status: "active",
       applications: 12
@@ -40,19 +42,46 @@ const AdminJobs = () => {
       location: "Los Angeles, CA",
       salary: "$40,000 - $55,000",
       type: "Full-time",
+      description: "Coordinating science laboratory activities and equipment",
+      requirements: "Science degree, Lab experience, Safety certification",
       posted: "3 days ago",
       status: "active",
       applications: 8
     }
-  ];
+  ]);
+  const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Submitting job:', formData);
-    toast({
-      title: "Job posted",
-      description: "Your job listing has been published successfully.",
-    });
+    
+    if (editingId) {
+      // Update existing job
+      setJobs(prev => prev.map(job => 
+        job.id === editingId 
+          ? { ...job, ...formData, posted: "Updated today" }
+          : job
+      ));
+      toast({
+        title: "Job updated",
+        description: "Your job listing has been updated successfully.",
+      });
+      setEditingId(null);
+    } else {
+      // Add new job
+      const newJob = {
+        id: Date.now(),
+        ...formData,
+        posted: "Just now",
+        status: "active",
+        applications: 0
+      };
+      setJobs(prev => [newJob, ...prev]);
+      toast({
+        title: "Job posted",
+        description: "Your job listing has been published successfully.",
+      });
+    }
+    
     setShowForm(false);
     setFormData({
       title: '',
@@ -62,6 +91,28 @@ const AdminJobs = () => {
       type: 'Full-time',
       description: '',
       requirements: ''
+    });
+  };
+
+  const handleEdit = (job: any) => {
+    setFormData({
+      title: job.title,
+      company: job.company,
+      location: job.location,
+      salary: job.salary,
+      type: job.type,
+      description: job.description,
+      requirements: job.requirements
+    });
+    setEditingId(job.id);
+    setShowForm(true);
+  };
+
+  const handleDelete = (id: number) => {
+    setJobs(prev => prev.filter(job => job.id !== id));
+    toast({
+      title: "Job deleted",
+      description: "The job listing has been removed successfully.",
     });
   };
 
@@ -81,7 +132,7 @@ const AdminJobs = () => {
       {showForm && (
         <Card>
           <CardHeader>
-            <CardTitle>Create New Job Posting</CardTitle>
+            <CardTitle>{editingId ? 'Edit Job Posting' : 'Create New Job Posting'}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -166,9 +217,21 @@ const AdminJobs = () => {
               <div className="flex gap-2">
                 <Button type="submit">
                   <Plus className="h-4 w-4 mr-2" />
-                  Publish Job
+                  {editingId ? 'Update Job' : 'Publish Job'}
                 </Button>
-                <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
+                <Button type="button" variant="outline" onClick={() => {
+                  setShowForm(false);
+                  setEditingId(null);
+                  setFormData({
+                    title: '',
+                    company: '',
+                    location: '',
+                    salary: '',
+                    type: 'Full-time',
+                    description: '',
+                    requirements: ''
+                  });
+                }}>
                   Cancel
                 </Button>
               </div>
@@ -189,7 +252,7 @@ const AdminJobs = () => {
                     <Badge className="bg-primary text-white">{job.type}</Badge>
                   </div>
                   <p className="text-gray-600 mb-3">{job.company}</p>
-                  <div className="flex items-center gap-4 text-sm text-gray-600">
+                  <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
                     <div className="flex items-center">
                       <MapPin className="h-4 w-4 mr-1" />
                       {job.location}
@@ -203,15 +266,16 @@ const AdminJobs = () => {
                       {job.posted}
                     </div>
                   </div>
+                  <p className="text-sm text-gray-600 mb-2">{job.description}</p>
                   <div className="mt-2">
                     <span className="text-sm text-gray-500">{job.applications} applications received</span>
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={() => handleEdit(job)}>
                     <Edit className="h-4 w-4" />
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={() => handleDelete(job.id)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>

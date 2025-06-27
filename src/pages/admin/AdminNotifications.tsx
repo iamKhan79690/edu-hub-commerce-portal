@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,15 +11,14 @@ import { useToast } from '@/hooks/use-toast';
 
 const AdminNotifications = () => {
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     title: '',
     content: '',
     priority: 'medium',
     category: 'Academic'
   });
-  const { toast } = useToast();
-
-  const notifications = [
+  const [notifications, setNotifications] = useState([
     {
       id: 1,
       title: "New Course Registration Open",
@@ -37,17 +37,60 @@ const AdminNotifications = () => {
       date: "2024-01-14",
       status: "active"
     }
-  ];
+  ]);
+  const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Submitting notification:', formData);
-    toast({
-      title: "Notification created",
-      description: "Your notification has been published successfully.",
-    });
+    
+    if (editingId) {
+      // Update existing notification
+      setNotifications(prev => prev.map(notif => 
+        notif.id === editingId 
+          ? { ...notif, ...formData, date: new Date().toISOString().split('T')[0] }
+          : notif
+      ));
+      toast({
+        title: "Notification updated",
+        description: "Your notification has been updated successfully.",
+      });
+      setEditingId(null);
+    } else {
+      // Add new notification
+      const newNotification = {
+        id: Date.now(),
+        ...formData,
+        date: new Date().toISOString().split('T')[0],
+        status: "active"
+      };
+      setNotifications(prev => [newNotification, ...prev]);
+      toast({
+        title: "Notification created",
+        description: "Your notification has been published successfully.",
+      });
+    }
+    
     setShowForm(false);
     setFormData({ title: '', content: '', priority: 'medium', category: 'Academic' });
+  };
+
+  const handleEdit = (notification: any) => {
+    setFormData({
+      title: notification.title,
+      content: notification.content,
+      priority: notification.priority,
+      category: notification.category
+    });
+    setEditingId(notification.id);
+    setShowForm(true);
+  };
+
+  const handleDelete = (id: number) => {
+    setNotifications(prev => prev.filter(notif => notif.id !== id));
+    toast({
+      title: "Notification deleted",
+      description: "The notification has been removed successfully.",
+    });
   };
 
   const getPriorityColor = (priority: string) => {
@@ -75,7 +118,7 @@ const AdminNotifications = () => {
       {showForm && (
         <Card>
           <CardHeader>
-            <CardTitle>Create New Notification</CardTitle>
+            <CardTitle>{editingId ? 'Edit Notification' : 'Create New Notification'}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -134,9 +177,13 @@ const AdminNotifications = () => {
               <div className="flex gap-2">
                 <Button type="submit">
                   <Send className="h-4 w-4 mr-2" />
-                  Publish Notification
+                  {editingId ? 'Update Notification' : 'Publish Notification'}
                 </Button>
-                <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
+                <Button type="button" variant="outline" onClick={() => {
+                  setShowForm(false);
+                  setEditingId(null);
+                  setFormData({ title: '', content: '', priority: 'medium', category: 'Academic' });
+                }}>
                   Cancel
                 </Button>
               </div>
@@ -163,10 +210,10 @@ const AdminNotifications = () => {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={() => handleEdit(notification)}>
                     <Edit className="h-4 w-4" />
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={() => handleDelete(notification.id)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
